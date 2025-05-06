@@ -11,20 +11,23 @@ setup(
     install_requires=[
         "mistralai",
         "docling",
-        "pymupdf4llm",
+        "pymupdf",
         "google-generativeai",
         "python-dotenv",
+        "streamlit",
+        "pillow",
     ],
     entry_points={
         "console_scripts": [
             "document-parser=src.cli:main",
+            "document-parser-ui=src.ui:run_app",
         ],
     },
     python_requires=">=3.8",
     author="Document Parser Team",
     author_email="info@example.com",
-    description="A tool for parsing and structuring document data",
-    keywords="pdf, parsing, ocr, json, document",
+    description="A tool for parsing and structuring document data with a beautiful UI",
+    keywords="pdf, parsing, ocr, json, document, streamlit, ui",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

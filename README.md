@@ -1,6 +1,6 @@
 # Document Parser
 
-A modular, production-grade tool for parsing PDF documents and converting them to structured JSON with confidence scores.
+A modular, production-grade tool for parsing PDF documents and converting them to structured JSON with confidence scores. Includes a beautiful Streamlit UI for easy interaction.
 
 ## Features
 
@@ -12,6 +12,7 @@ A modular, production-grade tool for parsing PDF documents and converting them t
 - **Production-Ready**: Includes error handling, retry mechanisms, and comprehensive logging
 - **Command-Line Interface**: Simple CLI for processing single files or entire directories
 - **Python API**: Can be used as a library in other Python applications
+- **Beautiful UI**: Streamlit-based user interface for easy document processing and visualization
 
 ## Installation
 
@@ -20,6 +21,7 @@ A modular, production-grade tool for parsing PDF documents and converting them t
 - Python 3.8 or higher
 - Mistral API key
 - Gemini API key
+- Streamlit 1.0.0 or higher (for the UI)
 
 ### Install from Source
 
@@ -44,6 +46,23 @@ GEMINI_API_KEY=your_gemini_api_key_here
 Alternatively, you can set these as environment variables or pass them directly to the API.
 
 ## Usage
+
+### Streamlit UI
+
+The easiest way to use the Document Parser is through the Streamlit UI:
+
+```bash
+streamlit run run_ui.py
+```
+
+This will open a web interface where you can:
+
+1. Upload PDF documents for processing
+2. View the original PDF and parsed JSON side by side
+3. Search through the JSON data
+4. Navigate multi-page PDFs
+5. Download the parsed JSON
+6. View previously processed documents
 
 ### Command-Line Interface
 
@@ -144,6 +163,11 @@ The document parser follows a modular architecture:
 
 5. **Configuration**: Prompt templates and other configuration
 
+6. **User Interface**: Streamlit-based UI for easy interaction
+   - PDF viewer with navigation controls
+   - Interactive JSON viewer with search functionality
+   - Upload and processing interface
+
 ## Extending the Tool
 
 ### Adding a New Parser
@@ -157,3 +181,26 @@ The document parser follows a modular architecture:
 1. Create a new processor class in the `src/processors` directory
 2. Implement the required methods for your processor
 3. Update the `DocumentProcessor` class to use your new processor
+
+### Extending the UI
+
+The UI follows a modular architecture in the `src/ui` directory:
+
+```
+src/ui/
+├── __init__.py           # Main UI module with the run_app function
+├── styles.py             # CSS styles for the UI
+├── components/           # UI components
+│   ├── __init__.py
+│   ├── pdf_viewer.py     # PDF viewer component
+│   └── json_viewer.py    # JSON viewer component
+└── utils/                # Utility functions
+    ├── __init__.py
+    └── processor.py      # Document processing utilities
+```
+
+To extend the UI:
+
+1. Add new components in the `src/ui/components` directory
+2. Add new utility functions in the `src/ui/utils` directory
+3. Update the main UI module in `src/ui/__init__.py`

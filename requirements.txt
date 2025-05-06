@@ -1,5 +1,7 @@
 mistralai>=0.0.7
 docling>=0.4.0
-pymupdf4llm>=0.1.0
+pymupdf>=1.22.0
 google-generativeai>=0.3.0
 python-dotenv>=1.0.0
+streamlit>=1.0.0
+pillow>=9.0.0
