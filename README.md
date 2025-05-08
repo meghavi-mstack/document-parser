@@ -1,10 +1,10 @@
 # Document Parser
 
-A modular, production-grade tool for parsing PDF documents and converting them to structured JSON with confidence scores. Includes a beautiful Streamlit UI for easy interaction.
+A modular, production-grade tool for parsing PDF and DOCX documents and converting them to structured JSON with confidence scores. Includes a beautiful Streamlit UI for easy interaction.
 
 ## Features
 
-- **Multi-Parser Approach**: Uses three different parsing methods (Mistral OCR, Docling, PyMuPDF) to extract text from PDFs
+- **Multi-Parser Approach**: Uses three different parsing methods (Mistral OCR, Docling, PyMuPDF) to extract text from PDFs and Mammoth for DOCX files
 - **Dynamic Schema Generation**: Creates custom JSON schemas tailored to each document's specific structure
 - **Confidence Scoring**: Provides confidence scores for each extracted field based on parser agreement
 - **Structured JSON Output**: Generates clean, well-structured JSON that accurately represents the document
@@ -22,6 +22,7 @@ A modular, production-grade tool for parsing PDF documents and converting them t
 - Mistral API key
 - Gemini API key
 - Streamlit 1.0.0 or higher (for the UI)
+- Mammoth 1.9.0 or higher (for DOCX processing)
 
 ### Install from Source
 
@@ -41,6 +42,11 @@ Create a `.env` file in the root directory with your API keys:
 ```
 MISTRAL_API_KEY=your_mistral_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional: Multiple Gemini API keys for rotation (to handle quota limits)
+GEMINI_API_KEY1=your_first_gemini_api_key
+GEMINI_API_KEY2=your_second_gemini_api_key
+# ... up to GEMINI_API_KEY10
 ```
 
 Alternatively, you can set these as environment variables or pass them directly to the API.
@@ -57,25 +63,27 @@ streamlit run run_ui.py
 
 This will open a web interface where you can:
 
-1. Upload PDF documents for processing
-2. View the original PDF and parsed JSON side by side
+1. Upload PDF or DOCX documents for processing
+2. View the original document and parsed JSON side by side
 3. Search through the JSON data
-4. Navigate multi-page PDFs
+4. Navigate multi-page PDFs or view DOCX content
 5. Download the parsed JSON
 6. View previously processed documents
 
 ### Command-Line Interface
 
-Process a single PDF file:
+Process a single document file:
 
 ```bash
 document-parser path/to/your/file.pdf
+# or
+document-parser path/to/your/file.docx
 ```
 
-Process all PDFs in a directory:
+Process all PDF and DOCX files in a directory:
 
 ```bash
-document-parser path/to/your/pdf/directory
+document-parser path/to/your/document/directory
 ```
 
 With custom output directory:
@@ -84,10 +92,10 @@ With custom output directory:
 document-parser path/to/your/pdf/directory --output-dir custom_output
 ```
 
-Process only the first 5 PDFs in a directory:
+Process only the first 5 documents in a directory:
 
 ```bash
-document-parser path/to/your/pdf/directory --limit 5
+document-parser path/to/your/document/directory --limit 5
 ```
 
 Specify API keys directly:
@@ -111,11 +119,14 @@ processor = DocumentProcessor(
 # Process a single PDF file
 processor.process_pdf("path/to/your/file.pdf")
 
-# Process all PDFs in a directory
-processor.process_directory("path/to/your/pdf/directory")
+# Process a single DOCX file
+processor.process_docx("path/to/your/file.docx")
+
+# Process all PDF and DOCX files in a directory
+processor.process_directory("path/to/your/document/directory")
 
 # Process with a limit
-processor.process_directory("path/to/your/pdf/directory", limit=5)
+processor.process_directory("path/to/your/document/directory", limit=5)
 ```
 
 ## Output Structure
@@ -125,11 +136,17 @@ The tool creates the following directory structure for outputs:
 ```
 output_dir/
 ├── raw_outputs/         # Raw parser outputs
-│   ├── filename_mistral_ocr.md
-│   ├── filename_docling.md
-│   └── filename_pymupdf.md
+│   ├── filename_mistral_ocr.md  # For PDF files
+│   ├── filename_docling.md      # For PDF files
+│   ├── filename_pymupdf.md      # For PDF files
+│   ├── filename_html.html       # For DOCX files
+│   └── filename_text.md         # For DOCX files
 ├── confidence_scores/   # Confidence score JSONs
 │   └── filename_confidence.json
+├── pdf_copies/          # Copies of processed PDF files
+│   └── filename.pdf
+├── docx_copies/         # Copies of processed DOCX files
+│   └── filename.docx
 └── json_outputs/        # Final structured JSONs
     └── filename.json
 ```
@@ -149,10 +166,11 @@ Confidence scores range from 0.0 to 1.0 for each field:
 
 The document parser follows a modular architecture:
 
-1. **Parsers**: Extract text from PDF documents
-   - `MistralParser`: Uses Mistral OCR
-   - `DoclingParser`: Uses Docling
-   - `PyMuPDFParser`: Uses PyMuPDF
+1. **Parsers**: Extract text from documents
+   - `MistralParser`: Uses Mistral OCR for PDFs
+   - `DoclingParser`: Uses Docling for PDFs
+   - `PyMuPDFParser`: Uses PyMuPDF for PDFs
+   - `DocxParser`: Uses Mammoth for DOCX files
 
 2. **Processors**: Process the extracted text
    - `GeminiProcessor`: Uses Gemini to generate JSON schema, confidence scores, and final JSON
@@ -165,15 +183,16 @@ The document parser follows a modular architecture:
 
 6. **User Interface**: Streamlit-based UI for easy interaction
    - PDF viewer with navigation controls
+   - DOCX viewer for Word documents
    - Interactive JSON viewer with search functionality
-   - Upload and processing interface
+   - Upload and processing interface for both PDF and DOCX files
 
 ## Extending the Tool
 
 ### Adding a New Parser
 
 1. Create a new parser class in the `src/parsers` directory
-2. Implement the `parse` method that takes a PDF path and returns extracted text
+2. Implement the `parse` method that takes a document path and returns extracted text
 3. Update the `DocumentProcessor` class to use your new parser
 
 ### Adding a New Processor
@@ -193,6 +212,7 @@ src/ui/
 ├── components/           # UI components
 │   ├── __init__.py
 │   ├── pdf_viewer.py     # PDF viewer component
+│   ├── docx_viewer.py    # DOCX viewer component
 │   └── json_viewer.py    # JSON viewer component
 └── utils/                # Utility functions
     ├── __init__.py

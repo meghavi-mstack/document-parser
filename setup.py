@@ -12,6 +12,8 @@ setup(
         "mistralai",
         "docling",
         "pymupdf",
+        "pymupdf4llm",
+        "mammoth",
         "google-generativeai",
         "python-dotenv",
         "streamlit",
@@ -27,7 +29,7 @@ setup(
     author="Document Parser Team",
     author_email="info@example.com",
     description="A tool for parsing and structuring document data with a beautiful UI",
-    keywords="pdf, parsing, ocr, json, document, streamlit, ui",
+    keywords="pdf, docx, parsing, ocr, json, document, streamlit, ui",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
