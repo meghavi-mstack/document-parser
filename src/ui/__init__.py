@@ -9,6 +9,7 @@ import streamlit as st
 
 from src.ui.styles import load_styles
 from src.ui.components.pdf_viewer import render_pdf_viewer, render_pdf_placeholder
+from src.ui.components.docx_viewer import render_docx_viewer, render_docx_placeholder
 from src.ui.components.json_viewer import render_json_viewer
 from src.ui.utils.processor import process_uploaded_file, load_existing_json
 from src.ui.utils.sticky_container import sticky_container
@@ -54,8 +55,8 @@ def render_upload_section():
     st.markdown('<h2 style="text-align: center; color: #3B82F6; margin-bottom: 1.5rem;">Upload Your Document</h2>', unsafe_allow_html=True)
 
     # File uploader with improved instructions
-    st.markdown('<p style="text-align: center; margin-bottom: 1.5rem;">Select a PDF document to extract structured data</p>', unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("Upload PDF", type="pdf", label_visibility="collapsed")
+    st.markdown('<p style="text-align: center; margin-bottom: 1.5rem;">Select a PDF or DOCX document to extract structured data</p>', unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("Upload Document", type=["pdf", "docx"], label_visibility="collapsed")
 
     if uploaded_file:
         # Show file details and process button
@@ -70,7 +71,7 @@ def render_upload_section():
             process_button = st.button("Process Document", type="primary", use_container_width=True)
     else:
         # Show instructions when no file is uploaded
-        st.markdown('Drag and drop a PDF file here or click to browse files', unsafe_allow_html=True)
+        st.markdown('Drag and drop a PDF or DOCX file here or click to browse files', unsafe_allow_html=True)
         process_button = False
         uploaded_file = None
 
@@ -107,10 +108,17 @@ def process_document(uploaded_file):
 
     if success and json_data:
         # Update session state
-        st.session_state.pdf_path = file_path
+        st.session_state.file_path = file_path
         st.session_state.json_data = json_data
         st.session_state.processing_complete = True
         st.session_state.show_upload = False
+
+        # Store file type in session state
+        file_extension = os.path.splitext(file_path)[1].lower()
+        if file_extension == '.pdf':
+            st.session_state.file_type = 'pdf'
+        elif file_extension == '.docx':
+            st.session_state.file_type = 'docx'
 
         # Show success message and rerun to update the UI
         st.success("Document processed successfully!")
@@ -177,14 +185,24 @@ def render_existing_documents_section():
                     st.session_state.processing_complete = True
                     st.session_state.show_upload = False
 
-                    # Try to find the corresponding PDF if it exists
+                    # Try to find the corresponding document if it exists
                     base_filename = os.path.splitext(selected_json)[0]
                     pdf_dir = os.path.join(output_dir, "pdf_copies")
+                    docx_dir = os.path.join(output_dir, "docx_copies")
 
+                    # Check for PDF first
                     if os.path.exists(pdf_dir):
                         pdf_path = os.path.join(pdf_dir, f"{base_filename}.pdf")
                         if os.path.exists(pdf_path):
-                            st.session_state.pdf_path = pdf_path
+                            st.session_state.file_path = pdf_path
+                            st.session_state.file_type = 'pdf'
+
+                    # If no PDF found, check for DOCX
+                    elif os.path.exists(docx_dir):
+                        docx_path = os.path.join(docx_dir, f"{base_filename}.docx")
+                        if os.path.exists(docx_path):
+                            st.session_state.file_path = docx_path
+                            st.session_state.file_type = 'docx'
 
                     # Show success message and rerun to update the UI
                     st.success("Document loaded successfully!")
@@ -248,13 +266,29 @@ def render_results():
     with col1:
         # Use the sticky container for the PDF viewer with custom configuration
         with sticky_container(mode="top", border=True, margin="5rem"):
-            # Add a container with some padding to ensure the PDF is fully visible
-            pdf_container = st.container()
-            with pdf_container:
-                if 'pdf_path' in st.session_state and os.path.exists(st.session_state.pdf_path):
-                    render_pdf_viewer(st.session_state.pdf_path)
+            # Add a container with some padding to ensure the document is fully visible
+            doc_container = st.container()
+            with doc_container:
+                if 'file_path' in st.session_state and os.path.exists(st.session_state.file_path):
+                    # Determine file type and use appropriate viewer
+                    file_extension = os.path.splitext(st.session_state.file_path)[1].lower()
+                    if file_extension == '.pdf':
+                        render_pdf_viewer(st.session_state.file_path)
+                    elif file_extension == '.docx':
+                        render_docx_viewer(st.session_state.file_path)
+                    else:
+                        st.warning(f"Unsupported file type: {file_extension}")
                 else:
-                    render_pdf_placeholder()
+                    # Show a placeholder if no file is available
+                    if 'file_type' in st.session_state:
+                        if st.session_state.file_type == 'pdf':
+                            render_pdf_placeholder()
+                        elif st.session_state.file_type == 'docx':
+                            render_docx_placeholder()
+                        else:
+                            st.info("Document not available for viewing.")
+                    else:
+                        st.info("Document not available for viewing.")
 
     with col2:
         render_json_viewer(st.session_state.json_data)

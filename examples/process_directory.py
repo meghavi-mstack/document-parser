@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Example script for processing a directory of PDF files
+Example script for processing a directory of PDF and DOCX files
 """
 
 import os
@@ -14,18 +14,18 @@ from src.document_processor import DocumentProcessor
 
 
 def main():
-    """Process a directory of PDF files"""
+    """Process a directory of PDF and DOCX files"""
     # Load environment variables from .env file
     load_dotenv()
-    
-    # Path to the directory containing PDF files
-    pdf_dir = "path/to/your/pdf/directory"
-    
+
+    # Path to the directory containing PDF and DOCX files
+    docs_dir = "path/to/your/documents/directory"
+
     # Create document processor
     processor = DocumentProcessor(output_dir="example_output")
-    
-    # Process all PDF files in the directory (limit to 5 files for this example)
-    processor.process_directory(pdf_dir, limit=5)
+
+    # Process all PDF and DOCX files in the directory (limit to 5 files for this example)
+    processor.process_directory(docs_dir, limit=5)
 
 
 if __name__ == "__main__":
